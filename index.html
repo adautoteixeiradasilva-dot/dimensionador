@@ -269,7 +269,7 @@
           <div id="precoTotal" style="font-size:24px; font-weight:900; color:#0f172a;">R$ 0,00</div>
         </div>
         <div style="display:flex; gap:6px;" class="no-print">
-          <button type="button" onclick="enviarWhatsApp()" class="btn-action btn-green">Enviar WhatsApp</button>
+          <button type="button" onclick="enviarWhatsApp()" class="btn-action btn-green">Enviar WhatsApp Completo</button>
           <button type="button" onclick="window.print()" class="btn-action btn-outline">Imprimir PDF</button>
         </div>
       </div>
@@ -283,6 +283,7 @@
     const passosPadrao = [2.5, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50];
     let estagiosManuais = [];
     let globalCalculo = {};
+    let globalBOM = [];
 
     function parseNum(val, def = 0) {
       if (!val) return def;
@@ -430,7 +431,8 @@
         bom.push({ codigo: `MDW-C${Math.round(val * 1.5)}`, nome: `Disjuntor Estágio ${val}kVAr`, qtd: qtd, preco: 65.00 });
       }
 
-      globalCalculo = { P, fp1, tensao, kvarTotalReal, disjuntorGeralSel, tcEntradaSel, valorTotal: 0 };
+      globalBOM = bom;
+      globalCalculo = { P, fp1, fp2, tensao, kvarNecessario, kvarTotalReal, iBancoNominal, disjuntorGeralSel, tcEntradaSel, valorTotal: 0, estagios };
       
       const tbody = document.getElementById('tabelaBOM');
       tbody.innerHTML = "";
@@ -459,9 +461,30 @@
     }
 
     function enviarWhatsApp() {
-      if (!globalCalculo.valorTotal) return;
+      if (!globalCalculo.valorTotal || !globalBOM.length) return;
+      
       const valorStr = globalCalculo.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      const msg = `⚡ *ORÇAMENTO BANCO DE CAPACITORES*\n• Potência: ${globalCalculo.P} kW (${globalCalculo.tensao}V)\n• Capacidade: ${globalCalculo.kvarTotalReal.toFixed(2)} kVAr\n• Disjuntor: ${globalCalculo.disjuntorGeralSel}A | TC: ${globalCalculo.tcEntradaSel}/5A\n• Total Material: R$ ${valorStr}`;
+      
+      let msg = `⚡ *ORÇAMENTO BANCO DE CAPACITORES*\n`;
+      msg += `-----------------------------------\n`;
+      msg += `📌 *DADOS DA INSTALAÇÃO*\n`;
+      msg += `• Potência Ativa: ${globalCalculo.P} kW\n`;
+      msg += `• Tensão: ${globalCalculo.tensao}V Trifásico\n`;
+      msg += `• Fator de Potência: ${globalCalculo.fp1} ➔ ${globalCalculo.fp2}\n`;
+      msg += `• Reativo Mínimo: ${globalCalculo.kvarNecessario.toFixed(2)} kVAr\n`;
+      msg += `• Capacidade Banco: ${globalCalculo.kvarTotalReal.toFixed(2)} kVAr (${globalCalculo.iBancoNominal.toFixed(1)}A)\n`;
+      msg += `• Entrada: Disj. ${globalCalculo.disjuntorGeralSel}A | TC ${globalCalculo.tcEntradaSel}/5A\n\n`;
+      
+      msg += `📦 *LISTA DE MATERIAIS (BOM)*\n`;
+      globalBOM.forEach((item, index) => {
+        const subtotal = item.qtd * item.preco;
+        msg += `${index + 1}. ${item.nome}\n`;
+        msg += `   └ Qtd: ${item.qtd}x | Total: R$ ${subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+      });
+      
+      msg += `-----------------------------------\n`;
+      msg += `💰 *VALOR TOTAL ESTIMADO: R$ ${valorStr}*\n`;
+
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
