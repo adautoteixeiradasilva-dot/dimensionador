@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Dimensionador Express - Banco de Capacitores</title>
+  
+  <!-- Configurações para PWA e iOS Offline -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dim. Express">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/590/590525.png">
+
   <style>
     /* Reset & Estilos Base */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -107,7 +114,7 @@
       
       <div class="form-group">
         <label for="tensao">Tensão da Rede (V)</label>
-        <select id="tensao" onchange="executarCalculoGeral()">
+        <select id="tensao">
           <option value="220" selected>220V Trifásico</option>
           <option value="380">380V Trifásico</option>
           <option value="440">440V Trifásico</option>
@@ -116,23 +123,23 @@
 
       <div class="form-group">
         <label for="potencia">Potência Ativa (kW)</label>
-        <input type="text" inputmode="decimal" id="potencia" value="240" oninput="executarCalculoGeral()" onchange="executarCalculoGeral()">
+        <input type="text" inputmode="decimal" id="potencia" value="240">
       </div>
 
       <div class="grid-2 form-group">
         <div>
           <label for="fpAtual">FP Atual</label>
-          <input type="text" inputmode="decimal" id="fpAtual" value="0,84" oninput="executarCalculoGeral()" onchange="executarCalculoGeral()">
+          <input type="text" inputmode="decimal" id="fpAtual" value="0,84">
         </div>
         <div>
           <label for="fpAlvo">FP Alvo</label>
-          <input type="text" inputmode="decimal" id="fpAlvo" value="0,95" oninput="executarCalculoGeral()" onchange="executarCalculoGeral()">
+          <input type="text" inputmode="decimal" id="fpAlvo" value="0,95">
         </div>
       </div>
 
       <div class="form-group">
         <label for="modoEstagios">Estratégia de Células</label>
-        <select id="modoEstagios" onchange="alternarModoEstagios(); executarCalculoGeral();">
+        <select id="modoEstagios" onchange="alternarModoEstagios();">
           <option value="simetrico">Células Iguais (Automático Padrão)</option>
           <option value="variado" selected>Variadas (Automático Progressivo)</option>
           <option value="manual">⚙️ Montagem Manual (Escolha Livre)</option>
@@ -141,7 +148,7 @@
 
       <div class="form-group" id="divNumEstagios">
         <label for="numEstagiosInput">Nº Máximo de Estágios</label>
-        <select id="numEstagiosInput" onchange="executarCalculoGeral()">
+        <select id="numEstagiosInput">
           <option value="1">1 Estágio</option>
           <option value="2">2 Estágios</option>
           <option value="3">3 Estágios</option>
@@ -168,7 +175,7 @@
       <div class="grid-2 form-group" style="border-top:1px solid #e2e8f0; padding-top:10px;">
         <div>
           <label for="disjuntorGeralSelect">Disjuntor Geral (A)</label>
-          <select id="disjuntorGeralSelect" onchange="executarCalculoGeral()">
+          <select id="disjuntorGeralSelect">
             <option value="32">32 A</option>
             <option value="40">40 A</option>
             <option value="50">50 A</option>
@@ -188,7 +195,7 @@
         </div>
         <div>
           <label for="tcEntradaSelect">TC Entrada (x/5A)</label>
-          <select id="tcEntradaSelect" onchange="executarCalculoGeral()">
+          <select id="tcEntradaSelect">
             <option value="50">50/5 A</option>
             <option value="75">75/5 A</option>
             <option value="100">100/5 A</option>
@@ -250,7 +257,7 @@
           </thead>
           <tbody id="tabelaBOM">
             <tr>
-              <td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">Carregando dados...</td>
+              <td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">Clique em CALCULAR & DIMENSIONAR...</td>
             </tr>
           </tbody>
         </table>
@@ -309,13 +316,11 @@
     function adicionarManual(kvarVal) {
       if (estagiosManuais.length < 12) {
         estagiosManuais.push(kvarVal);
-        executarCalculoGeral();
       }
     }
 
     function limparManual() {
       estagiosManuais = [];
-      executarCalculoGeral();
     }
 
     function renderizarBotoesManuais() {
@@ -464,9 +469,8 @@
       alert("Para abrir no Safari:\n\n1. Toque no ícone de compartilhamento (quadrado com seta para cima) na parte inferior direita da tela.\n2. Escolha 'Abrir no Safari'.\n\nIsso executará os scripts sem limitações do sistema.");
     }
 
-    // Inicialização direta
+    // Inicialização direta dos botões manuais
     renderizarBotoesManuais();
-    executarCalculoGeral();
   </script>
 </body>
 </html>
