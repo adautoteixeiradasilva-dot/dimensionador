@@ -2,397 +2,425 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dimensionador Express - Banco de Capacitores</title>
-  
-  <!-- Configurações para PWA e iOS Offline -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Dim. Express">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/590/590525.png">
-
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Reset & Estilos Base */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 20px; }
-    
-    /* Header */
-    header { background-color: #0f172a; color: #fff; padding: 14px 16px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .header-container { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-    .badge-v { background: #f59e0b; color: #0f172a; font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
-    
-    /* Banner de Aviso iOS */
-    .ios-alert-banner {
-      background: #fef3c7;
-      border-bottom: 2px solid #f59e0b;
-      color: #92400e;
-      padding: 10px 14px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .ios-alert-banner button {
-      background: #f59e0b;
-      color: #0f172a;
-      border: none;
-      padding: 6px 12px;
-      font-weight: bold;
-      border-radius: 4px;
-      font-size: 11px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    /* Layout */
-    main { max-width: 1100px; margin: 16px auto; padding: 0 12px; display: grid; grid-template-columns: 1fr; gap: 20px; }
-    @media (min-width: 768px) { main { grid-template-columns: 360px 1fr; } }
-    
-    /* Cards */
-    .card { background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .card-title { font-size: 15px; font-weight: bold; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 14px; }
-    
-    /* Forms */
-    .form-group { margin-bottom: 12px; }
-    label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569; margin-bottom: 4px; }
-    input, select { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; font-size: 15px; outline: none; -webkit-appearance: none; }
-    select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 32px; }
-    input:focus, select:focus { border-color: #f59e0b; background-color: #fff; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    
-    /* Botões */
-    .btn-primary { width: 100%; background: #f59e0b; color: #0f172a; font-weight: bold; padding: 14px; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 14px; margin-top: 8px; -webkit-tap-highlight-color: transparent; }
-    .btn-primary:active { background: #d97706; }
-    .btn-action { padding: 12px; border-radius: 6px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; color: #fff; text-align: center; text-decoration: none; flex: 1; display: inline-block; }
-    .btn-green { background: #16a34a; }
-    .btn-outline { background: transparent; border: 1px solid #cbd5e1; color: #334155; }
-
-    /* Seletor Dual */
-    .selector-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .opt-card { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: left; background: #fff; cursor: pointer; }
-    .opt-card.active-padrao { border-color: #f59e0b; background: #fffbeb; box-shadow: 0 0 0 2px #f59e0b; }
-    .opt-card.active-eco { border-color: #10b981; background: #ecfdf5; box-shadow: 0 0 0 2px #10b981; }
-    .opt-title { font-weight: bold; font-size: 11px; color: #0f172a; }
-    .opt-desc { font-size: 10px; color: #64748b; margin-top: 2px; }
-
-    /* Tabela */
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-    th { background: #f8fafc; text-transform: uppercase; font-size: 10px; color: #64748b; padding: 8px; border-bottom: 1px solid #e2e8f0; }
-    td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; }
-
-    /* Utilities */
-    .hidden { display: none !important; }
-    .badge-passo { display: inline-block; background: #fef3c7; color: #78350f; font-weight: bold; padding: 3px 8px; border-radius: 4px; border: 1px solid #fde68a; font-size: 11px; margin: 2px; }
-
     @media print {
-      header, .no-print, #painelManual, .ios-alert-banner { display: none !important; }
-      main { display: block !important; width: 100% !important; }
+      header, section:first-child, button, .no-print, #painelManual, #seletorOpcoesEquivalentes {
+        display: none !important;
+      }
+      main {
+        display: block !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body { background-color: #ffffff !important; color: #000000 !important; }
+      section { border: none !important; box-shadow: none !important; }
     }
   </style>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800 antialiased font-sans">
 
-  <header>
-    <div class="header-container">
-      <h1 style="font-size: 16px;">Dimensionador Express <span class="badge-v">v3.8 Web</span></h1>
-      <button type="button" onclick="forcarAberturaSafari()" style="background:#0284c7; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold; cursor:pointer;">
-        🌐 Abrir no Safari
-      </button>
+  <header class="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold tracking-tight">Dimensionador Express <span class="text-amber-500 text-xs">v3.2 (Dual-Orçamento)</span></h1>
+      <span class="text-xs bg-green-600 text-white px-2 py-1 rounded-full">100% Offline</span>
     </div>
   </header>
 
-  <div class="ios-alert-banner" id="bannerAlerta">
-    <span>⚠️ <strong>Aviso iOS:</strong> Se o cálculo não atualizar, abra este arquivo no Safari.</span>
-    <button type="button" onclick="forcarAberturaSafari()">Como Abrir ↗</button>
-  </div>
+  <main class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
 
-  <main>
-    <section class="card">
-      <div class="card-title">1. Dados da Instalação</div>
+    <!-- PAINEL DE INPUT DE DADOS -->
+    <section class="bg-white p-5 rounded-lg shadow border border-gray-200 h-fit">
+      <h2 class="text-lg font-bold border-b pb-2 mb-4 text-slate-800">1. Dados da Instalação</h2>
       
-      <div class="form-group">
-        <label for="tensao">Tensão da Rede (V)</label>
-        <select id="tensao">
-          <option value="220" selected>220V Trifásico</option>
-          <option value="380">380V Trifásico</option>
-          <option value="440">440V Trifásico</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="potencia">Potência Ativa (kW)</label>
-        <input type="text" inputmode="decimal" id="potencia" value="240">
-      </div>
-
-      <div class="grid-2 form-group">
+      <div class="space-y-4">
         <div>
-          <label for="fpAtual">FP Atual</label>
-          <input type="text" inputmode="decimal" id="fpAtual" value="0,84">
-        </div>
-        <div>
-          <label for="fpAlvo">FP Alvo</label>
-          <input type="text" inputmode="decimal" id="fpAlvo" value="0,95">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="modoEstagios">Estratégia de Células</label>
-        <select id="modoEstagios" onchange="alternarModoEstagios();">
-          <option value="simetrico">Células Iguais (Automático Padrão)</option>
-          <option value="variado" selected>Variadas (Automático Progressivo)</option>
-          <option value="manual">⚙️ Montagem Manual (Escolha Livre)</option>
-        </select>
-      </div>
-
-      <div class="form-group" id="divNumEstagios">
-        <label for="numEstagiosInput">Nº Máximo de Estágios</label>
-        <select id="numEstagiosInput">
-          <option value="1">1 Estágio</option>
-          <option value="2">2 Estágios</option>
-          <option value="3">3 Estágios</option>
-          <option value="4">4 Estágios</option>
-          <option value="5">5 Estágios</option>
-          <option value="6">6 Estágios</option>
-          <option value="7" selected>7 Estágios</option>
-          <option value="8">8 Estágios</option>
-          <option value="9">9 Estágios</option>
-          <option value="10">10 Estágios</option>
-          <option value="11">11 Estágios</option>
-          <option value="12">12 Estágios</option>
-        </select>
-      </div>
-
-      <div id="painelManual" class="hidden" style="margin-bottom:12px; background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #cbd5e1;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <span style="font-size:11px; font-weight:bold;">Adicionar Célula Manual:</span>
-          <span onclick="limparManual()" style="font-size:11px; color:#dc2626; cursor:pointer; font-weight:bold;">Limpar Tudo</span>
-        </div>
-        <div id="botoesCelulas" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px;"></div>
-      </div>
-
-      <div class="grid-2 form-group" style="border-top:1px solid #e2e8f0; padding-top:10px;">
-        <div>
-          <label for="disjuntorGeralSelect">Disjuntor Geral (A)</label>
-          <select id="disjuntorGeralSelect">
-            <option value="32">32 A</option>
-            <option value="40">40 A</option>
-            <option value="50">50 A</option>
-            <option value="63">63 A</option>
-            <option value="80">80 A</option>
-            <option value="100">100 A</option>
-            <option value="125">125 A</option>
-            <option value="160">160 A</option>
-            <option value="200">200 A</option>
-            <option value="250">250 A</option>
-            <option value="315">315 A</option>
-            <option value="400" selected>400 A</option>
-            <option value="500">500 A</option>
-            <option value="630">630 A</option>
-            <option value="800">800 A</option>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Tensão da Rede (V)</label>
+          <select id="tensao" class="w-full p-2.5 border rounded-md bg-gray-50 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+            <option value="220" selected>220V Trifásico</option>
+            <option value="380">380V Trifásico</option>
+            <option value="440">440V Trifásico</option>
           </select>
         </div>
+
         <div>
-          <label for="tcEntradaSelect">TC Entrada (x/5A)</label>
-          <select id="tcEntradaSelect">
-            <option value="50">50/5 A</option>
-            <option value="75">75/5 A</option>
-            <option value="100">100/5 A</option>
-            <option value="150">150/5 A</option>
-            <option value="200">200/5 A</option>
-            <option value="250">250/5 A</option>
-            <option value="300">300/5 A</option>
-            <option value="400">400/5 A</option>
-            <option value="500">500/5 A</option>
-            <option value="600">600/5 A</option>
-            <option value="800" selected>800/5 A</option>
-            <option value="1000">1000/5 A</option>
-            <option value="1250">1250/5 A</option>
-            <option value="1500">1500/5 A</option>
-            <option value="2000">2000/5 A</option>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Potência Ativa (kW)</label>
+          <input type="number" id="potencia" value="240" class="w-full p-2 border rounded-md text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">FP Atual</label>
+            <input type="number" step="0.01" id="fpAtual" value="0.88" class="w-full p-2 border rounded-md text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">FP Alvo</label>
+            <input type="number" step="0.01" id="fpAlvo" value="0.95" class="w-full p-2 border rounded-md text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Estratégia de Células</label>
+          <select id="modoEstagios" onchange="alternarModoVisual(this.value)" class="w-full p-2.5 border rounded-md bg-gray-50 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+            <option value="simetrico" selected>Células Iguais (Automático Padrão)</option>
+            <option value="variado">Variadas (Automático Progressivo)</option>
+            <option value="manual">⚙️ Montagem Manual (Escolha Livre)</option>
           </select>
         </div>
+
+        <div id="divNumEstagios">
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Nº de Estágios</label>
+          <select id="numEstagiosInput" class="w-full p-2 border rounded-md bg-gray-50 text-sm">
+            <!-- 1 a 12 via JS -->
+          </select>
+        </div>
+
+        <!-- SELEÇÃO PERSONALIZADA DE PROTEÇÃO E MEDIÇÃO -->
+        <div class="border-t pt-3 mt-3 grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Disjuntor Geral (A)</label>
+            <select id="disjuntorGeralSelect" onchange="validarAjustesManuais()" class="w-full p-2 border rounded-md bg-white text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
+              <!-- Gerado via JS -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">TC de Entrada (x/5A)</label>
+            <select id="tcEntradaSelect" onchange="validarAjustesManuais()" class="w-full p-2 border rounded-md bg-white text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
+              <!-- Gerado via JS -->
+            </select>
+          </div>
+        </div>
+        <div id="avisoProtecao" class="hidden p-2 rounded text-[11px] font-medium leading-tight"></div>
+
+        <button onclick="calcularEGerarBOM()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-md transition duration-150 uppercase text-sm tracking-wide shadow-md">
+          Calcular & Dimensionar Estágios
+        </button>
       </div>
 
-      <button type="button" id="btnCalcular" onclick="executarCalculoGeral()" class="btn-primary">CALCULAR & DIMENSIONAR</button>
+      <!-- PAINEL SELETOR MANUAL DE CÉLULAS -->
+      <div id="painelManual" class="mt-4 p-4 bg-slate-100 rounded-md border border-slate-300 hidden">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-bold text-slate-700 uppercase">Adicionar Célula Comercial:</span>
+          <button onclick="limparEstagiosManuais()" class="text-xs text-red-600 hover:underline font-semibold">Limpar Células</button>
+        </div>
+        <div id="botoesCelulas" class="grid grid-cols-4 gap-1.5 mb-1"></div>
+      </div>
 
-      <!-- Painel de Resultados -->
-      <div id="resultadoCalculo" style="margin-top:14px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; font-size:12px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>Reativo Mínimo:</span>
-          <strong id="kvarTotal">0 kVAr</strong>
+      <!-- RESUMO TÉCNICO E BALANÇO DE MARGEM -->
+      <div id="resultadoCalculo" class="mt-6 p-4 bg-slate-50 rounded-md border text-xs space-y-2.5 hidden">
+        
+        <!-- CARD SELETOR DE OPÇÕES DUAIS (MODO SIMÉTRICO) -->
+        <div id="seletorOpcoesEquivalentes" class="hidden space-y-2 mb-3 pb-3 border-b">
+          <span class="block font-bold text-slate-800 text-xs">Comparativo de Ajuste Orçamentário:</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btnOpcaoPadrao" onclick="selecionarOpcaoEstrategia('padrao')" class="p-2 border rounded-md text-left transition bg-amber-50 border-amber-500">
+              <div class="font-bold text-amber-900 text-[11px]">1. 100% Padronizada</div>
+              <div id="descOpcaoPadrao" class="text-[10px] text-amber-700 mt-0.5"></div>
+            </button>
+            <button id="btnOpcaoEconomica" onclick="selecionarOpcaoEstrategia('economica')" class="p-2 border rounded-md text-left transition bg-white border-gray-300 hover:bg-gray-50">
+              <div class="font-bold text-slate-800 text-[11px]">2. Mista Econômica</div>
+              <div id="descOpcaoEconomica" class="text-[10px] text-gray-500 mt-0.5"></div>
+            </button>
+          </div>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>Capacidade Selecionada:</span>
-          <strong id="kvarFinal">0 kVAr</strong>
+
+        <div class="flex justify-between">
+          <span class="text-gray-600">Reativo Mínimo Calculado:</span>
+          <strong id="kvarTotal" class="text-slate-900">0 kVAr</strong>
         </div>
-        <div style="display:flex; justify-content:space-between; margin:6px 0; background:#eff6ff; padding:6px; border-radius:4px;">
-          <span style="font-weight:bold; color:#1e40af;">Corrente Total:</span>
-          <strong id="correnteTotalBanco" style="color:#1d4ed8;">0.00 A</strong>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Capacidade Total Selecionada:</span>
+          <strong id="kvarFinal" class="text-slate-900">0 kVAr</strong>
         </div>
-        <div id="alertaMargem" style="padding:6px; border-radius:4px; text-align:center; font-weight:bold; font-size:11px; margin-bottom:8px;"></div>
-        <div>
-          <span style="font-weight:bold; display:block; margin-bottom:4px;">Estágios Montados:</span>
-          <div id="resumoPassos"></div>
+        
+        <div class="flex justify-between items-center border-t border-b py-2 my-1 bg-blue-50/50 px-1 rounded">
+          <span class="text-slate-700 font-bold">Corrente Total dos Capacitores:</span>
+          <strong id="correnteTotalBanco" class="text-blue-700 text-sm">0.00 A</strong>
+        </div>
+
+        <div id="alertaMargem" class="p-2.5 rounded font-semibold text-center text-xs transition-all duration-200"></div>
+
+        <div class="pt-1">
+          <span class="text-gray-600 font-semibold block mb-1.5">Composição Atual dos Estágios:</span>
+          <div id="resumoPassos" class="flex flex-wrap gap-1"></div>
         </div>
       </div>
     </section>
 
-    <section class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:14px;">
-        <div class="card-title" style="border:none; margin:0; padding:0;">2. Lista de Componentes (BOM)</div>
-        <span id="badgeItens" style="background:#e2e8f0; font-size:11px; padding:2px 8px; border-radius:4px; font-weight:bold;">0 itens</span>
+    <!-- LISTA DE COMPONENTES (BOM) -->
+    <section class="md:col-span-2 bg-white p-5 rounded-lg shadow border border-gray-200">
+      <div class="flex justify-between items-center border-b pb-2 mb-4">
+        <h2 class="text-lg font-bold text-slate-800">2. Lista de Componentes do Banco (BOM)</h2>
+        <span id="badgeItens" class="text-xs bg-slate-200 text-slate-700 font-bold px-2 py-1 rounded">0 itens</span>
       </div>
 
-      <div class="table-container">
-        <table>
-          <thead>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500">
             <tr>
-              <th>Item / Descrição</th>
-              <th style="text-align:center;">Qtd</th>
-              <th style="text-align:right;">Unit. (R$)</th>
-              <th style="text-align:right;">Total (R$)</th>
+              <th class="p-2">Item / Descrição</th>
+              <th class="p-2 text-center">Qtd</th>
+              <th class="p-2 text-right">Unitário (R$)</th>
+              <th class="p-2 text-right">Total (R$)</th>
             </tr>
           </thead>
-          <tbody id="tabelaBOM">
+          <tbody id="tabelaBOM" class="divide-y divide-gray-100">
             <tr>
-              <td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">Clique em CALCULAR & DIMENSIONAR...</td>
+              <td colspan="4" class="p-4 text-center text-gray-400 italic">Insira os dados e clique em "Calcular & Dimensionar Estágios".</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:14px; display:flex; flex-direction:column; gap:12px;">
+      <div class="mt-6 pt-4 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          <span style="font-size:10px; color:#64748b; font-weight:bold; text-transform:uppercase;">Valor Total Estimado</span>
-          <div id="precoTotal" style="font-size:24px; font-weight:900; color:#0f172a;">R$ 0,00</div>
+          <span class="text-xs text-gray-500 uppercase font-semibold">Valor Total Estimado</span>
+          <div id="precoTotal" class="text-2xl font-black text-slate-900">R$ 0,00</div>
         </div>
-        <div style="display:flex; gap:6px;" class="no-print">
-          <button type="button" onclick="enviarWhatsApp()" class="btn-action btn-green">Enviar WhatsApp</button>
-          <button type="button" onclick="window.print()" class="btn-action btn-outline">Imprimir PDF</button>
+
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button onclick="enviarWhatsApp('consultivo')" class="flex-1 sm:flex-none bg-green-600 text-white px-3 py-2 rounded text-xs font-bold hover:bg-green-700">
+            WhatsApp (Completo)
+          </button>
+          <button onclick="enviarWhatsApp('direto')" class="flex-1 sm:flex-none bg-emerald-800 text-white px-3 py-2 rounded text-xs font-bold hover:bg-emerald-900">
+            WhatsApp (Resumido)
+          </button>
+          <button onclick="window.print()" class="flex-1 sm:flex-none border border-slate-300 text-slate-700 px-3 py-2 rounded text-xs font-bold hover:bg-gray-50">
+            Imprimir PDF
+          </button>
         </div>
       </div>
     </section>
   </main>
 
   <script>
-    // Tabelas Comerciais
     const disjuntoresComerciais = [32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800];
     const tcsComerciais = [50, 75, 100, 150, 200, 250, 300, 400, 500, 600, 800, 1000, 1250, 1500, 2000];
     const passosPadrao = [2.5, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50];
+    
     let estagiosManuais = [];
     let globalCalculo = {};
+    let opcoesSimetricas = null;
 
-    function parseNum(val, def = 0) {
-      if (!val) return def;
-      let str = val.toString().replace(',', '.').trim();
-      let n = parseFloat(str);
-      return isNaN(n) ? def : n;
+    // Populando dropdowns
+    const selectEstagios = document.getElementById('numEstagiosInput');
+    for (let i = 1; i <= 12; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.innerText = `${i} Estágio${i > 1 ? 's' : ''}`;
+      if (i === 6) opt.selected = true;
+      selectEstagios.appendChild(opt);
+    }
+
+    const selectDisjGeral = document.getElementById('disjuntorGeralSelect');
+    disjuntoresComerciais.forEach(amp => {
+      selectDisjGeral.innerHTML += `<option value="${amp}">${amp} A</option>`;
+    });
+
+    const selectTc = document.getElementById('tcEntradaSelect');
+    tcsComerciais.forEach(tc => {
+      selectTc.innerHTML += `<option value="${tc}">${tc}/5 A</option>`;
+    });
+
+    const containerBotoes = document.getElementById('botoesCelulas');
+    passosPadrao.forEach(kvarVal => {
+      containerBotoes.innerHTML += `
+        <button onclick="adicionarEstagioManual(${kvarVal})" class="bg-white hover:bg-amber-500 hover:text-slate-900 border border-slate-300 font-bold text-xs py-1.5 rounded transition">
+          +${kvarVal}k
+        </button>
+      `;
+    });
+
+    function alternarModoVisual(modo) {
+      const painelManual = document.getElementById('painelManual');
+      const divNumEstagios = document.getElementById('divNumEstagios');
+      
+      if (modo === 'manual') {
+        painelManual.classList.remove('hidden');
+        divNumEstagios.classList.add('hidden');
+        if (estagiosManuais.length === 0 && globalCalculo.estagios) {
+          estagiosManuais = [...globalCalculo.estagios];
+        }
+      } else {
+        painelManual.classList.add('hidden');
+        divNumEstagios.classList.remove('hidden');
+      }
+    }
+
+    function adicionarEstagioManual(kvarVal) {
+      if (estagiosManuais.length >= 12) {
+        alert("Limite máximo de 12 estágios atingido.");
+        return;
+      }
+      estagiosManuais.push(kvarVal);
+      recalcularComEstagios(estagiosManuais, true);
+    }
+
+    function removerEstagioManual(index) {
+      estagiosManuais.splice(index, 1);
+      recalcularComEstagios(estagiosManuais, true);
+    }
+
+    function limparEstagiosManuais() {
+      estagiosManuais = [];
+      recalcularComEstagios(estagiosManuais, true);
     }
 
     function selecionarContatorWEG(kvar, tensao) {
       if (tensao == 220) {
-        if (kvar <= 5) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A", preco: 210.00 };
-        if (kvar <= 10) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A", preco: 285.00 };
-        if (kvar <= 15) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A", preco: 340.00 };
-        return { codigo: "CWBC38-21-30", nome: "Contator WEG CWBC 38A", preco: 490.00 };
+        if (kvar <= 5) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A (Ref. Células até 5 kVAr)", preco: 210.00 };
+        if (kvar <= 10) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A (Ref. Células até 10 kVAr)", preco: 285.00 };
+        if (kvar <= 15) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A (Ref. Células até 15 kVAr)", preco: 340.00 };
+        return { codigo: "CWBC38-21-30", nome: "Contator WEG CWBC 38A (Ref. Células até 25 kVAr)", preco: 490.00 };
       } else {
-        if (kvar <= 10) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A", preco: 210.00 };
-        if (kvar <= 15) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A", preco: 285.00 };
-        if (kvar <= 25) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A", preco: 340.00 };
-        return { codigo: "CWBC50-21-30", nome: "Contator WEG CWBC 50A", preco: 620.00 };
+        if (kvar <= 10) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A (Ref. Células até 10 kVAr)", preco: 210.00 };
+        if (kvar <= 15) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A (Ref. Células até 15 kVAr)", preco: 285.00 };
+        if (kvar <= 25) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A (Ref. Células até 25 kVAr)", preco: 340.00 };
+        return { codigo: "CWBC50-21-30", nome: "Contator WEG CWBC 50A (Ref. Células até 40 kVAr)", preco: 620.00 };
       }
     }
 
-    function alternarModoEstagios() {
+    function calcularEGerarBOM() {
+      const tensao = parseInt(document.getElementById('tensao').value);
+      const P = parseFloat(document.getElementById('potencia').value);
+      const fp1 = parseFloat(document.getElementById('fpAtual').value);
+      const fp2 = parseFloat(document.getElementById('fpAlvo').value);
+      const numEstagios = parseInt(document.getElementById('numEstagiosInput').value);
       const modo = document.getElementById('modoEstagios').value;
-      const elPainel = document.getElementById('painelManual');
-      const elDivEstagios = document.getElementById('divNumEstagios');
-      if (elPainel) elPainel.classList.toggle('hidden', modo !== 'manual');
-      if (elDivEstagios) elDivEstagios.classList.toggle('hidden', modo === 'manual');
-    }
 
-    function adicionarManual(kvarVal) {
-      if (estagiosManuais.length < 12) {
-        estagiosManuais.push(kvarVal);
+      if (!P || P <= 0 || fp1 >= fp2) {
+        alert("Verifique os valores de Potência e Fator de Potência inseridos.");
+        return;
       }
-    }
-
-    function limparManual() {
-      estagiosManuais = [];
-    }
-
-    function renderizarBotoesManuais() {
-      const container = document.getElementById('botoesCelulas');
-      if (!container) return;
-      container.innerHTML = "";
-      passosPadrao.forEach(kvarVal => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.style.cssText = "padding:6px 2px; font-size:11px; font-weight:bold; background:#fff; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;";
-        btn.innerText = `+${kvarVal}k`;
-        btn.onclick = function() { adicionarManual(kvarVal); };
-        container.appendChild(btn);
-      });
-    }
-
-    function executarCalculoGeral() {
-      const tensao = parseNum(document.getElementById('tensao').value, 220);
-      const P = parseNum(document.getElementById('potencia').value, 240);
-      const fp1 = parseNum(document.getElementById('fpAtual').value, 0.84);
-      const fp2 = parseNum(document.getElementById('fpAlvo').value, 0.95);
-      const numEstagios = parseInt(document.getElementById('numEstagiosInput').value) || 7;
-      const modo = document.getElementById('modoEstagios').value;
-
-      if (P <= 0 || fp1 >= fp2) return;
 
       const k = Math.tan(Math.acos(fp1)) - Math.tan(Math.acos(fp2));
       const kvarNecessario = P * k;
 
       let estagios = [];
+      const divSeletor = document.getElementById('seletorOpcoesEquivalentes');
+      divSeletor.classList.add('hidden');
+      opcoesSimetricas = null;
 
       if (modo === 'manual') {
         estagios = [...estagiosManuais];
       } else if (modo === 'simetrico') {
+        // Opção 1: 100% Células Iguais arredondadas para cima
         const celulaPadrao = passosPadrao.find(p => (p * numEstagios) >= kvarNecessario) || passosPadrao[passosPadrao.length - 1];
-        estagios = Array(numEstagios).fill(celulaPadrao);
-      } else if (modo === 'variado') {
-        let acumu = 0;
-        const passoBase = passosPadrao.find(p => p >= (kvarNecessario / (numEstagios * 1.5))) || 5;
-        const sequencia = [1, 2, 2, 4, 4, 8, 8, 8, 8, 8, 8, 8];
+        const estagiosPadrao = Array(numEstagios).fill(celulaPadrao);
         
-        for (let i = 0; i < numEstagios; i++) {
-          if (acumu >= kvarNecessario) break;
-          const mult = sequencia[i] || 4;
-          const cap = passoBase * mult;
-          estagios.push(cap);
-          acumu += cap;
+        // Opção 2: Econômica Mista (N-1 células comerciais menores + 1 célula comercial ajustada)
+        let estagiosEconomicos = [];
+        if (numEstagios > 1) {
+          const celulaInferior = passosPadrao.filter(p => p < celulaPadrao).pop() || celulaPadrao;
+          const somaInferiores = celulaInferior * (numEstagios - 1);
+          const falta = kvarNecessario - somaInferiores;
+          const celulaAjuste = passosPadrao.find(p => p >= falta) || passosPadrao[passosPadrao.length - 1];
+
+          for(let i=0; i<numEstagios-1; i++) estagiosEconomicos.push(celulaInferior);
+          estagiosEconomicos.push(celulaAjuste);
+        } else {
+          estagiosEconomicos = [...estagiosPadrao];
+        }
+
+        const totalPadrao = estagiosPadrao.reduce((a,b)=>a+b, 0);
+        const totalEconomico = estagiosEconomicos.reduce((a,b)=>a+b, 0);
+
+        // Se a opção econômica for diferente e vantajosa, habilita o seletor dual
+        if (totalEconomico < totalPadrao && numEstagios > 1) {
+          opcoesSimetricas = {
+            padrao: estagiosPadrao,
+            economica: estagiosEconomicos
+          };
+
+          document.getElementById('descOpcaoPadrao').innerText = `${numEstagios}x ${celulaPadrao}k = ${totalPadrao} kVAr (+${(totalPadrao - kvarNecessario).toFixed(2)}k)`;
+          const descEconomica = `${numEstagios-1}x ${estagiosEconomicos[0]}k + 1x ${estagiosEconomicos[numEstagios-1]}k = ${totalEconomico} kVAr (+${(totalEconomico - kvarNecessario).toFixed(2)}k)`;
+          document.getElementById('descOpcaoEconomica').innerText = descEconomica;
+
+          divSeletor.classList.remove('hidden');
+          selecionarOpcaoEstrategia('padrao');
+          return;
+        } else {
+          estagios = estagiosPadrao;
+        }
+      } else {
+        // Modo Variado / Progressivo
+        let base = kvarNecessario / (numEstagios * 1.3);
+        let celulaBase = passosPadrao.reduce((prev, curr) => Math.abs(curr - base) < Math.abs(prev - base) ? curr : prev);
+        if (celulaBase < 2.5) celulaBase = 2.5;
+
+        estagios.push(celulaBase);
+        let acumulado = celulaBase;
+
+        for (let i = 1; i < numEstagios; i++) {
+          let restante = kvarNecessario - acumulado;
+          let estRestantes = numEstagios - i;
+          let alvo = restante / estRestantes;
+          
+          let prox;
+          if (i === numEstagios - 1) {
+            prox = passosPadrao.find(p => p >= alvo) || passosPadrao[passosPadrao.length - 1];
+          } else {
+            prox = passosPadrao.reduce((prev, curr) => Math.abs(curr - alvo) < Math.abs(prev - alvo) ? curr : prev);
+          }
+
+          estagios.push(prox);
+          acumulado += prox;
         }
       }
 
-      processarExecucao(estagios, P, fp1, fp2, tensao, kvarNecessario);
+      processarExecucaoCalculo(estagios, modo === 'manual');
     }
 
-    function processarExecucao(estagios, P, fp1, fp2, tensao, kvarNecessario) {
+    function selecionarOpcaoEstrategia(opcao) {
+      const btnP = document.getElementById('btnOpcaoPadrao');
+      const btnE = document.getElementById('btnOpcaoEconomica');
+
+      if (opcao === 'padrao') {
+        btnP.className = "p-2 border rounded-md text-left transition bg-amber-50 border-amber-500 ring-2 ring-amber-400";
+        btnE.className = "p-2 border rounded-md text-left transition bg-white border-gray-300 hover:bg-gray-50 opacity-80";
+        processarExecucaoCalculo(opcoesSimetricas.padrao, false);
+      } else {
+        btnE.className = "p-2 border rounded-md text-left transition bg-emerald-50 border-emerald-500 ring-2 ring-emerald-400";
+        btnP.className = "p-2 border rounded-md text-left transition bg-white border-gray-300 hover:bg-gray-50 opacity-80";
+        processarExecucaoCalculo(opcoesSimetricas.economica, false);
+      }
+    }
+
+    function processarExecucaoCalculo(estagios, ehManual) {
+      const tensao = parseInt(document.getElementById('tensao').value);
+      const P = parseFloat(document.getElementById('potencia').value);
+      const fp1 = parseFloat(document.getElementById('fpAtual').value);
       const kvarTotalReal = estagios.reduce((a, b) => a + b, 0);
 
       const iBancoNominal = (kvarTotalReal * 1000) / (Math.sqrt(3) * tensao);
-      const djCalc = disjuntoresComerciais.find(d => d >= iBancoNominal * 1.35) || 800;
-      document.getElementById('disjuntorGeralSelect').value = djCalc;
+      const iDisjuntorAlvo = iBancoNominal * 1.35;
+      const disjSugerido = disjuntoresComerciais.find(d => d >= iDisjuntorAlvo) || 800;
+      document.getElementById('disjuntorGeralSelect').value = disjSugerido;
 
       const iInstalacao = (P * 1000) / (Math.sqrt(3) * tensao * fp1);
-      const tcCalc = tcsComerciais.find(t => t >= iInstalacao) || 2000;
-      document.getElementById('tcEntradaSelect').value = tcCalc;
+      const tcSugerido = tcsComerciais.find(t => t >= iInstalacao) || 2000;
+      document.getElementById('tcEntradaSelect').value = tcSugerido;
 
-      recalcularBOM(estagios, P, fp1, fp2, tensao, kvarNecessario);
+      recalcularComEstagios(estagios, ehManual);
     }
 
-    function recalcularBOM(estagios, P, fp1, fp2, tensao, kvarNecessario) {
+    function recalcularComEstagios(estagios, ehManual) {
+      const tensao = parseInt(document.getElementById('tensao').value);
+      const P = parseFloat(document.getElementById('potencia').value);
+      const fp1 = parseFloat(document.getElementById('fpAtual').value);
+      const fp2 = parseFloat(document.getElementById('fpAlvo').value);
+
+      const k = Math.tan(Math.acos(fp1)) - Math.tan(Math.acos(fp2));
+      const kvarNecessario = P * k;
+
       estagios.sort((a, b) => a - b);
+
       const kvarTotalReal = estagios.reduce((a, b) => a + b, 0);
       const deltaKvar = kvarTotalReal - kvarNecessario;
-      const iBancoNominal = (kvarTotalReal * 1000) / (Math.sqrt(3) * tensao);
+      const iBancoNominal = tensao > 0 ? (kvarTotalReal * 1000) / (Math.sqrt(3) * tensao) : 0;
 
       document.getElementById('kvarTotal').innerText = `${kvarNecessario.toFixed(2)} kVAr`;
       document.getElementById('kvarFinal').innerText = `${kvarTotalReal.toFixed(2)} kVAr`;
@@ -400,77 +428,175 @@
 
       const alertaDiv = document.getElementById('alertaMargem');
       if (deltaKvar >= 0) {
-        alertaDiv.style.background = "#dcfce7"; alertaDiv.style.color = "#166534";
-        alertaDiv.innerText = `Sobra: +${deltaKvar.toFixed(2)} kVAr`;
+        alertaDiv.className = "p-2.5 rounded font-semibold text-center text-xs bg-emerald-100 text-emerald-800 border border-emerald-300";
+        alertaDiv.innerText = `Sobra / Reserva: +${deltaKvar.toFixed(2)} kVAr em relação ao cálculo mínimo.`;
       } else {
-        alertaDiv.style.background = "#fef3c7"; alertaDiv.style.color = "#92400e";
-        alertaDiv.innerText = `Faltando: ${Math.abs(deltaKvar).toFixed(2)} kVAr`;
+        alertaDiv.className = "p-2.5 rounded font-semibold text-center text-xs bg-amber-100 text-amber-800 border border-amber-300";
+        alertaDiv.innerText = `Faltando: ${Math.abs(deltaKvar).toFixed(2)} kVAr para atingir o FP Alvo.`;
       }
 
-      document.getElementById('resumoPassos').innerHTML = estagios.map((est, idx) => `<span class="badge-passo">E${idx+1}: ${est}kVar</span>`).join('');
+      const containerPassos = document.getElementById('resumoPassos');
+      containerPassos.innerHTML = "";
+      if (estagios.length === 0) {
+        containerPassos.innerHTML = `<span class="text-xs text-gray-400 italic">Nenhum estágio selecionado.</span>`;
+      } else {
+        estagios.forEach((est, idx) => {
+          const clickAction = ehManual ? `onclick="removerEstagioManual(${idx})" title="Clique para remover"` : '';
+          const cursorStyle = ehManual ? 'cursor-pointer hover:bg-red-200 hover:border-red-400 hover:text-red-900' : '';
+          containerPassos.innerHTML += `
+            <span ${clickAction} class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold border border-amber-300 text-xs transition ${cursorStyle}">
+              E${idx+1}: ${est}kVar ${ehManual ? '×' : ''}
+            </span>
+          `;
+        });
+      }
+      document.getElementById('resultadoCalculo').classList.remove('hidden');
 
+      atualizarBOM(estagios, tensao, P, fp1, kvarTotalReal, kvarNecessario, deltaKvar);
+    }
+
+    function validarAjustesManuais() {
+      if (globalCalculo.estagios) {
+        atualizarBOM(globalCalculo.estagios, globalCalculo.tensao, globalCalculo.P, globalCalculo.fp1, globalCalculo.kvarTotalReal, globalCalculo.kvarNecessario, globalCalculo.deltaKvar);
+      }
+    }
+
+    function atualizarBOM(estagios, tensao, P, fp1, kvarTotalReal, kvarNecessario, deltaKvar) {
       const disjuntorGeralSel = parseInt(document.getElementById('disjuntorGeralSelect').value);
       const tcEntradaSel = parseInt(document.getElementById('tcEntradaSelect').value);
+
+      const iBancoNominal = (kvarTotalReal * 1000) / (Math.sqrt(3) * tensao);
+      const iInstalacaoNominal = (P * 1000) / (Math.sqrt(3) * tensao * fp1);
+
+      const avisoDiv = document.getElementById('avisoProtecao');
+      let mensagensAviso = [];
+
+      if (disjuntorGeralSel < iBancoNominal * 1.35) {
+        mensagensAviso.push(`⚠️ Disjuntor (${disjuntorGeralSel}A) recomendado mínimo é ${Math.ceil(iBancoNominal * 1.35)}A para suportar harmônicas.`);
+      }
+      if (tcEntradaSel < iInstalacaoNominal) {
+        mensagensAviso.push(`🚨 TC (${tcEntradaSel}/5A) menor que a corrente total da carga (${Math.ceil(iInstalacaoNominal)}A).`);
+      }
+
+      if (mensagensAviso.length > 0) {
+        avisoDiv.classList.remove('hidden');
+        avisoDiv.className = "p-2 rounded text-[11px] font-medium leading-tight bg-amber-50 text-amber-800 border border-amber-300 space-y-1";
+        avisoDiv.innerHTML = mensagensAviso.join('<br>');
+      } else {
+        avisoDiv.classList.add('hidden');
+      }
+
       const contagemCapacitores = {};
-      estagios.forEach(kvarVal => contagemCapacitores[kvarVal] = (contagemCapacitores[kvarVal] || 0) + 1);
+      estagios.forEach(kvarVal => {
+        contagemCapacitores[kvarVal] = (contagemCapacitores[kvarVal] || 0) + 1;
+      });
 
       const numEstagiosReal = estagios.length || 1;
       let bom = [
-        { codigo: `PFW01-${numEstagiosReal}`, nome: `Controlador WEG PFW01 (${numEstagiosReal} Saídas)`, qtd: 1, preco: 1350.00 },
-        { codigo: `DJG-${disjuntorGeralSel}A`, nome: `Disjuntor Geral ${disjuntorGeralSel}A`, qtd: 1, preco: 380.00 + (disjuntorGeralSel * 2.1) },
-        { codigo: "GAB-6040", nome: "Gabinete Metálico IP54", qtd: 1, preco: 890.00 },
-        { codigo: `TC-${tcEntradaSel}-5`, nome: `TC Janela ${tcEntradaSel}/5A`, qtd: 1, preco: 115.00 + (tcEntradaSel * 0.12) }
+        { codigo: `PFW01-${numEstagiosReal}`, nome: `Controlador Automático de FP WEG PFW01 (${numEstagiosReal} Saídas)`, qtd: 1, preco: 1350.00 },
+        { codigo: `DJG-${disjuntorGeralSel}A`, nome: `Disjuntor Geral Tripolar em Caixa Moldada WEG ${disjuntorGeralSel}A`, qtd: 1, preco: 380.00 + (disjuntorGeralSel * 2.1) },
+        { codigo: "GAB-6040", nome: "Gabinete Metálico Montagem IP54 600x400x250mm", qtd: 1, preco: 890.00 },
+        { codigo: `TC-${tcEntradaSel}-5`, nome: `Transformador de Corrente Janela WEG ${tcEntradaSel}/5A`, qtd: 1, preco: 115.00 + (tcEntradaSel * 0.12) }
       ];
 
       for (const [kvarVal, qtd] of Object.entries(contagemCapacitores)) {
         const val = parseFloat(kvarVal);
         const contator = selecionarContatorWEG(val, tensao);
-        bom.push({ codigo: `UCW-${val}kvar`, nome: `Célula Capacitiva WEG ${val}kVAr`, qtd: qtd, preco: val * 22.50 });
+        
+        bom.push({ codigo: `UCW-${val}kvar`, nome: `Célula Capacitiva Trifásica WEG ${val} kVAr ${tensao}V`, qtd: qtd, preco: val * 22.50 });
         bom.push({ codigo: contator.codigo, nome: contator.nome, qtd: qtd, preco: contator.preco });
-        bom.push({ codigo: `MDW-C${Math.round(val * 1.5)}`, nome: `Disjuntor Estágio ${val}kVAr`, qtd: qtd, preco: 65.00 });
+        bom.push({ codigo: `MDW-C${Math.round(val * 1.5)}`, nome: `Disjuntor Tripolar para Estágio de ${val}kVAr`, qtd: qtd, preco: 65.00 });
       }
 
-      globalCalculo = { P, fp1, tensao, kvarTotalReal, disjuntorGeralSel, tcEntradaSel, valorTotal: 0 };
-      
+      globalCalculo = { P, fp1, tensao, numEstagios: numEstagiosReal, kvarNecessario, kvarTotalReal, deltaKvar, disjuntorGeralSel, tcEntradaSel, estagios, bom };
+      renderizarTabela(bom);
+    }
+
+    function renderizarTabela(itens) {
       const tbody = document.getElementById('tabelaBOM');
       tbody.innerHTML = "";
-      let valorTotal = 0, totalItens = 0;
+      let valorTotal = 0;
+      let totalItens = 0;
 
-      bom.forEach(item => {
+      itens.forEach(item => {
         const subtotal = item.qtd * item.preco;
         valorTotal += subtotal;
         totalItens += item.qtd;
+
         tbody.innerHTML += `
-          <tr>
-            <td>
-              <div style="font-weight:bold; color:#0f172a;">${item.nome}</div>
-              <div style="font-size:10px; color:#94a3b8;">${item.codigo}</div>
+          <tr class="hover:bg-gray-50">
+            <td class="p-2 border-b">
+              <div class="font-medium text-slate-800">${item.nome}</div>
+              <div class="text-xs text-gray-400">Cód: ${item.codigo}</div>
             </td>
-            <td style="text-align:center; font-weight:bold;">${item.qtd}</td>
-            <td style="text-align:right;">R$ ${item.preco.toFixed(2)}</td>
-            <td style="text-align:right; font-weight:bold;">R$ ${subtotal.toFixed(2)}</td>
+            <td class="p-2 border-b text-center font-bold">${item.qtd}</td>
+            <td class="p-2 border-b text-right">R$ ${item.preco.toFixed(2)}</td>
+            <td class="p-2 border-b text-right font-semibold">R$ ${subtotal.toFixed(2)}</td>
           </tr>
         `;
       });
 
       globalCalculo.valorTotal = valorTotal;
       document.getElementById('precoTotal').innerText = `R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-      document.getElementById('badgeItens').innerText = `${totalItens} peças`;
+      document.getElementById('badgeItens').innerText = `${totalItens} peças dimensionadas`;
     }
 
-    function enviarWhatsApp() {
-      if (!globalCalculo.valorTotal) return;
+    function enviarWhatsApp(tipo) {
+      if (!globalCalculo.valorTotal) {
+        alert("Execute o cálculo primeiro.");
+        return;
+      }
+
       const valorStr = globalCalculo.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      const msg = `⚡ *ORÇAMENTO BANCO DE CAPACITORES*\n• Potência: ${globalCalculo.P} kW (${globalCalculo.tensao}V)\n• Capacidade: ${globalCalculo.kvarTotalReal.toFixed(2)} kVAr\n• Disjuntor: ${globalCalculo.disjuntorGeralSel}A | TC: ${globalCalculo.tcEntradaSel}/5A\n• Total Material: R$ ${valorStr}`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+      
+      let textoMargem = "";
+      if (globalCalculo.deltaKvar >= 0) {
+        textoMargem = `+${globalCalculo.deltaKvar.toFixed(2)} kVAr (Reserva para Expansão)`;
+      } else {
+        textoMargem = `-${Math.abs(globalCalculo.deltaKvar).toFixed(2)} kVAr (Ajuste de Tolerância)`;
+      }
+
+      let mensagem = "";
+
+      if (tipo === 'consultivo') {
+        mensagem = 
+          "⚡ *PROPOSTA TÉCNICA - BANCO DE CAPACITORES AUTOMÁTICO*\n" +
+          "--------------------------------------------------\n" +
+          "📌 *DIAGNÓSTICO TÉCNICO:*\n" +
+          `• Carga Ativa: ${globalCalculo.P} kW em ${globalCalculo.tensao}V\n` +
+          `• Reativo Mínimo Calculado: *${globalCalculo.kvarNecessario.toFixed(2)} kVAr*\n` +
+          `• Capacidade Projetada: *${globalCalculo.kvarTotalReal.toFixed(2)} kVAr* (${globalCalculo.numEstagios} Estágios)\n` +
+          `• Corrente Total Banco: *${((globalCalculo.kvarTotalReal * 1000) / (Math.sqrt(3) * globalCalculo.tensao)).toFixed(2)} A*\n` +
+          `• Disjuntor Geral Proteção: *${globalCalculo.disjuntorGeralSel}A*\n` +
+          `• Medição TC Entrada: *${globalCalculo.tcEntradaSel}/5A*\n` +
+          `• Saldo/Margem: *${textoMargem}*\n\n` +
+          "🛡️ *BENEFÍCIOS E ENGENHARIA APLICADA:*\n" +
+          "✓ Eliminação imediata de multas por excedente reativo na fatura de energia.\n" +
+          "✓ Redução do aquecimento nos condutores e alívio de carga no transformador.\n" +
+          "✓ Componentes dimensionados segundo as normas *NBR 5410 / NBR IEC 60831*.\n" +
+          "✓ Proteção reforçada com contatores de pré-carga WEG CWBC para surtos de inserção.\n\n" +
+          "💰 *INVESTIMENTO ESTIMADO:*\n" +
+          `*R$ ${valorStr}* (Material completo para montagem)\n` +
+          "--------------------------------------------------\n" +
+          "📄 *Encaminho o PDF detalhado da proposta a seguir.*";
+      } else {
+        mensagem = 
+          "⚡ *ORÇAMENTO BANCO DE CAPACITORES*\n" +
+          `• Potência: ${globalCalculo.P} kW (${globalCalculo.tensao}V)\n` +
+          `• Capacidade: ${globalCalculo.kvarTotalReal.toFixed(2)} kVAr (${globalCalculo.numEstagios} Estágios)\n` +
+          `• Corrente Banco: ${((globalCalculo.kvarTotalReal * 1000) / (Math.sqrt(3) * globalCalculo.tensao)).toFixed(2)} A\n` +
+          `• Disjuntor Geral: ${globalCalculo.disjuntorGeralSel}A | TC: ${globalCalculo.tcEntradaSel}/5A\n` +
+          `• Investimento Estimado: R$ ${valorStr}\n\n` +
+          "Fico à disposição para dúvidas técnicas ou ajustes na proposta!";
+      }
+
+      const link = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
+      window.open(link, '_blank');
     }
 
-    function forcarAberturaSafari() {
-      alert("Para abrir no Safari:\n\n1. Toque no ícone de compartilhamento (quadrado com seta para cima) na parte inferior direita da tela.\n2. Escolha 'Abrir no Safari'.\n\nIsso executará os scripts sem limitações do sistema.");
-    }
-
-    // Inicialização direta dos botões manuais
-    renderizarBotoesManuais();
+    window.onload = function() {
+      calcularEGerarBOM();
+    };
   </script>
 </body>
 </html>
