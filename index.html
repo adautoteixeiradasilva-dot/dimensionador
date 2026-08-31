@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dimensionador Express - Banco de Capacitores</title>
+  <title>Dimensionador Express v3.4 - Banco de Capacitores WEG</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @media print {
-      header, section:first-child, button, .no-print, #painelManual, #seletorOpcoesEquivalentes {
+      header, section:first-child, button, .no-print, #painelManual, #seletorOpcoesEquivalentes, .btn-acao-tabela {
         display: none !important;
       }
       main {
@@ -18,6 +18,15 @@
       }
       body { background-color: #ffffff !important; color: #000000 !important; }
       section { border: none !important; box-shadow: none !important; }
+      input, select {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        font-weight: bold !important;
+      }
+      .hide-price-column {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -25,7 +34,7 @@
 
   <header class="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold tracking-tight">Dimensionador Express <span class="text-amber-500 text-xs">v3.2 (Dual-Orçamento)</span></h1>
+      <h1 class="text-xl font-bold tracking-tight">Dimensionador Express <span class="text-amber-500 text-xs">v3.4 (Edição de Preços & Itens)</span></h1>
       <span class="text-xs bg-green-600 text-white px-2 py-1 rounded-full">100% Offline</span>
     </div>
   </header>
@@ -62,6 +71,25 @@
           </div>
         </div>
 
+        <!-- SEÇÃO DE COMPENSAÇÃO DO TRANSFORMADOR -->
+        <div class="border-t pt-3 mt-3 bg-amber-50/50 p-2.5 rounded border border-amber-200/60">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold uppercase text-slate-800 flex items-center gap-1">
+              ⚡ Trafo a Vazio (WEG)
+            </label>
+            <input type="checkbox" id="chkIncluirTrafo" onchange="alternarOpcaoTrafo(this.checked)" class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer">
+          </div>
+          
+          <div id="divSelectTrafo" class="hidden">
+            <label class="block text-[11px] font-semibold text-gray-600 mb-1">Potência do Transformador (kVA)</label>
+            <select id="selectKvaTrafo" onchange="calcularEGerarBOM()" class="w-full p-2 border rounded-md bg-white text-xs font-semibold focus:ring-2 focus:ring-amber-500 outline-none">
+            </select>
+            <span id="labelKvarTrafoRef" class="block text-[10px] text-amber-800 font-medium mt-1">
+              Reativo estimado: -- kVAR
+            </span>
+          </div>
+        </div>
+
         <div>
           <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Estratégia de Células</label>
           <select id="modoEstagios" onchange="alternarModoVisual(this.value)" class="w-full p-2.5 border rounded-md bg-gray-50 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-medium">
@@ -74,7 +102,6 @@
         <div id="divNumEstagios">
           <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Nº de Estágios</label>
           <select id="numEstagiosInput" class="w-full p-2 border rounded-md bg-gray-50 text-sm">
-            <!-- 1 a 12 via JS -->
           </select>
         </div>
 
@@ -83,13 +110,11 @@
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Disjuntor Geral (A)</label>
             <select id="disjuntorGeralSelect" onchange="validarAjustesManuais()" class="w-full p-2 border rounded-md bg-white text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
-              <!-- Gerado via JS -->
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">TC de Entrada (x/5A)</label>
             <select id="tcEntradaSelect" onchange="validarAjustesManuais()" class="w-full p-2 border rounded-md bg-white text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
-              <!-- Gerado via JS -->
             </select>
           </div>
         </div>
@@ -132,7 +157,7 @@
           <strong id="kvarTotal" class="text-slate-900">0 kVAr</strong>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-600">Capacidade Total Selecionada:</span>
+          <span class="text-gray-600">Capacidade Banco Automático:</span>
           <strong id="kvarFinal" class="text-slate-900">0 kVAr</strong>
         </div>
         
@@ -150,33 +175,47 @@
       </div>
     </section>
 
-    <!-- LISTA DE COMPONENTES (BOM) -->
+    <!-- LISTA DE COMPONENTES (BOM E ORÇAMENTO EDITÁVEL) -->
     <section class="md:col-span-2 bg-white p-5 rounded-lg shadow border border-gray-200">
-      <div class="flex justify-between items-center border-b pb-2 mb-4">
-        <h2 class="text-lg font-bold text-slate-800">2. Lista de Componentes do Banco (BOM)</h2>
-        <span id="badgeItens" class="text-xs bg-slate-200 text-slate-700 font-bold px-2 py-1 rounded">0 itens</span>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 mb-4 gap-2">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">2. Lista de Componentes do Banco (Orçamento Editável)</h2>
+          <span id="badgeItens" class="text-xs bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded">0 itens</span>
+        </div>
+        
+        <!-- CONTROLES DE MODO E ADIÇÃO MANUAL -->
+        <div class="flex items-center gap-3 no-print">
+          <label class="flex items-center gap-1.5 text-xs text-slate-700 font-semibold cursor-pointer bg-slate-100 px-2.5 py-1.5 rounded border border-slate-300 hover:bg-slate-200">
+            <input type="checkbox" id="chkExibirPrecos" checked onchange="toggleExibirPrecos(this.checked)" class="w-4 h-4 text-amber-600 rounded">
+            <span>Exibir Preços no Relatório</span>
+          </label>
+          <button onclick="adicionarNovoItemManual()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1">
+            <span>+ Adicionar Item</span>
+          </button>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
+        <table class="w-full text-left text-sm" id="tabelaBOMContainer">
           <thead class="bg-gray-50 border-b text-xs uppercase text-gray-500">
             <tr>
-              <th class="p-2">Item / Descrição</th>
-              <th class="p-2 text-center">Qtd</th>
-              <th class="p-2 text-right">Unitário (R$)</th>
-              <th class="p-2 text-right">Total (R$)</th>
+              <th class="p-2">Item / Descrição / Código</th>
+              <th class="p-2 text-center w-20">Qtd</th>
+              <th class="p-2 text-right w-28 col-preco">Unitário (R$)</th>
+              <th class="p-2 text-right w-28 col-preco">Total (R$)</th>
+              <th class="p-2 text-center w-12 btn-acao-tabela no-print">Ação</th>
             </tr>
           </thead>
           <tbody id="tabelaBOM" class="divide-y divide-gray-100">
             <tr>
-              <td colspan="4" class="p-4 text-center text-gray-400 italic">Insira os dados e clique em "Calcular & Dimensionar Estágios".</td>
+              <td colspan="5" class="p-4 text-center text-gray-400 italic">Insira os dados e clique em "Calcular & Dimensionar Estágios".</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <div class="mt-6 pt-4 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
+        <div id="containerPrecoTotal">
           <span class="text-xs text-gray-500 uppercase font-semibold">Valor Total Estimado</span>
           <div id="precoTotal" class="text-2xl font-black text-slate-900">R$ 0,00</div>
         </div>
@@ -201,11 +240,71 @@
     const tcsComerciais = [50, 75, 100, 150, 200, 250, 300, 400, 500, 600, 800, 1000, 1250, 1500, 2000];
     const passosPadrao = [2.5, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50];
     
+    // TABELA EXATA DA WEG: Reativo a vazio para Trafo (kVA -> kVAR)
+    const trafoReativoMapWEG = {
+      30: 1.0,
+      45: 1.5,
+      75: 2.0,
+      112.5: 3.0,
+      150: 3.5,
+      225: 5.0,
+      300: 6.0,
+      500: 7.5,
+      750: 10.0,
+      1000: 10.0,
+      1500: 12.5
+    };
+
     let estagiosManuais = [];
     let globalCalculo = {};
     let opcoesSimetricas = null;
+    let listaItensBOM = [];
+    let exibirPrecosGlobal = true;
 
-    // Populando dropdowns
+    // Preços de mercado reais (Média praticada em e-commerce/distribuidores no Brasil em BRL)
+    function obterPrecoEstimado(tipo, parametro, tensao) {
+      if (tipo === 'controlador') {
+        // PFW01 6/12 estagios mercado: R$ 2.100 a R$ 2.800
+        return parametro <= 6 ? 2150.00 : 2750.00;
+      }
+      if (tipo === 'gabinete') {
+        // Quadro/Gabinete IP54 com placa de montagem
+        return 1250.00;
+      }
+      if (tipo === 'disjuntor_geral') {
+        // Caixa Moldada WEG DWB / DWM
+        if (parametro <= 125) return 650.00;
+        if (parametro <= 250) return 1150.00;
+        if (parametro <= 400) return 2100.00;
+        return 3400.00;
+      }
+      if (tipo === 'tc') {
+        // TC de Janela WEG / Altronic
+        if (parametro <= 250) return 145.00;
+        if (parametro <= 600) return 210.00;
+        return 380.00;
+      }
+      if (tipo === 'celula') {
+        // Células Capacitivas Trifásicas WEG UCW
+        // Preço aprox 220V é mais caro por causa da amperagem/capacitância
+        const fatorTensao = tensao == 220 ? 42.0 : 32.0; 
+        return Math.max(180.00, parametro * fatorTensao);
+      }
+      if (tipo === 'contator') {
+        // Contatores WEG CWBC para Cargas Capacitivas com resistores de pré-carga
+        if (parametro <= 10) return 320.00; // CWBC9/18
+        if (parametro <= 20) return 460.00; // CWBC25
+        if (parametro <= 30) return 680.00; // CWBC38
+        return 980.00; // CWBC50/65/80
+      }
+      if (tipo === 'disjuntor_estagio') {
+        // Disjuntor DIN Tripolar WEG MDW Curva C
+        return 110.00;
+      }
+      return 100.00;
+    }
+
+    // Populate dropdowns
     const selectEstagios = document.getElementById('numEstagiosInput');
     for (let i = 1; i <= 12; i++) {
       const opt = document.createElement('option');
@@ -225,6 +324,12 @@
       selectTc.innerHTML += `<option value="${tc}">${tc}/5 A</option>`;
     });
 
+    const selectTrafo = document.getElementById('selectKvaTrafo');
+    for (const [kva, kvar] of Object.entries(trafoReativoMapWEG)) {
+      selectTrafo.innerHTML += `<option value="${kva}">${kva} kVA (Reativo: ${kvar} kVAR)</option>`;
+    }
+    selectTrafo.value = "300";
+
     const containerBotoes = document.getElementById('botoesCelulas');
     passosPadrao.forEach(kvarVal => {
       containerBotoes.innerHTML += `
@@ -233,6 +338,16 @@
         </button>
       `;
     });
+
+    function alternarOpcaoTrafo(ativo) {
+      const divSelect = document.getElementById('divSelectTrafo');
+      if (ativo) {
+        divSelect.classList.remove('hidden');
+      } else {
+        divSelect.classList.add('hidden');
+      }
+      calcularEGerarBOM();
+    }
 
     function alternarModoVisual(modo) {
       const painelManual = document.getElementById('painelManual');
@@ -271,15 +386,15 @@
 
     function selecionarContatorWEG(kvar, tensao) {
       if (tensao == 220) {
-        if (kvar <= 5) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A (Ref. Células até 5 kVAr)", preco: 210.00 };
-        if (kvar <= 10) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A (Ref. Células até 10 kVAr)", preco: 285.00 };
-        if (kvar <= 15) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A (Ref. Células até 15 kVAr)", preco: 340.00 };
-        return { codigo: "CWBC38-21-30", nome: "Contator WEG CWBC 38A (Ref. Células até 25 kVAr)", preco: 490.00 };
+        if (kvar <= 5) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A (Células até 5 kVAr)", preco: obterPrecoEstimado('contator', 5, tensao) };
+        if (kvar <= 10) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A (Células até 10 kVAr)", preco: obterPrecoEstimado('contator', 10, tensao) };
+        if (kvar <= 15) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A (Células até 15 kVAr)", preco: obterPrecoEstimado('contator', 15, tensao) };
+        return { codigo: "CWBC38-21-30", nome: "Contator WEG CWBC 38A (Células até 25 kVAr)", preco: obterPrecoEstimado('contator', 25, tensao) };
       } else {
-        if (kvar <= 10) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A (Ref. Células até 10 kVAr)", preco: 210.00 };
-        if (kvar <= 15) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A (Ref. Células até 15 kVAr)", preco: 285.00 };
-        if (kvar <= 25) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A (Ref. Células até 25 kVAr)", preco: 340.00 };
-        return { codigo: "CWBC50-21-30", nome: "Contator WEG CWBC 50A (Ref. Células até 40 kVAr)", preco: 620.00 };
+        if (kvar <= 10) return { codigo: "CWBC9-21-30", nome: "Contator WEG CWBC 9A (Células até 10 kVAr)", preco: obterPrecoEstimado('contator', 10, tensao) };
+        if (kvar <= 15) return { codigo: "CWBC18-21-30", nome: "Contator WEG CWBC 18A (Células até 15 kVAr)", preco: obterPrecoEstimado('contator', 15, tensao) };
+        if (kvar <= 25) return { codigo: "CWBC25-21-30", nome: "Contator WEG CWBC 25A (Células até 25 kVAr)", preco: obterPrecoEstimado('contator', 25, tensao) };
+        return { codigo: "CWBC50-21-30", nome: "Contator WEG CWBC 50A (Células até 40 kVAr)", preco: obterPrecoEstimado('contator', 40, tensao) };
       }
     }
 
@@ -307,11 +422,9 @@
       if (modo === 'manual') {
         estagios = [...estagiosManuais];
       } else if (modo === 'simetrico') {
-        // Opção 1: 100% Células Iguais arredondadas para cima
         const celulaPadrao = passosPadrao.find(p => (p * numEstagios) >= kvarNecessario) || passosPadrao[passosPadrao.length - 1];
         const estagiosPadrao = Array(numEstagios).fill(celulaPadrao);
         
-        // Opção 2: Econômica Mista (N-1 células comerciais menores + 1 célula comercial ajustada)
         let estagiosEconomicos = [];
         if (numEstagios > 1) {
           const celulaInferior = passosPadrao.filter(p => p < celulaPadrao).pop() || celulaPadrao;
@@ -328,7 +441,6 @@
         const totalPadrao = estagiosPadrao.reduce((a,b)=>a+b, 0);
         const totalEconomico = estagiosEconomicos.reduce((a,b)=>a+b, 0);
 
-        // Se a opção econômica for diferente e vantajosa, habilita o seletor dual
         if (totalEconomico < totalPadrao && numEstagios > 1) {
           opcoesSimetricas = {
             padrao: estagiosPadrao,
@@ -346,7 +458,6 @@
           estagios = estagiosPadrao;
         }
       } else {
-        // Modo Variado / Progressivo
         let base = kvarNecessario / (numEstagios * 1.3);
         let celulaBase = passosPadrao.reduce((prev, curr) => Math.abs(curr - base) < Math.abs(prev - base) ? curr : prev);
         if (celulaBase < 2.5) celulaBase = 2.5;
@@ -493,45 +604,111 @@
 
       const numEstagiosReal = estagios.length || 1;
       let bom = [
-        { codigo: `PFW01-${numEstagiosReal}`, nome: `Controlador Automático de FP WEG PFW01 (${numEstagiosReal} Saídas)`, qtd: 1, preco: 1350.00 },
-        { codigo: `DJG-${disjuntorGeralSel}A`, nome: `Disjuntor Geral Tripolar em Caixa Moldada WEG ${disjuntorGeralSel}A`, qtd: 1, preco: 380.00 + (disjuntorGeralSel * 2.1) },
-        { codigo: "GAB-6040", nome: "Gabinete Metálico Montagem IP54 600x400x250mm", qtd: 1, preco: 890.00 },
-        { codigo: `TC-${tcEntradaSel}-5`, nome: `Transformador de Corrente Janela WEG ${tcEntradaSel}/5A`, qtd: 1, preco: 115.00 + (tcEntradaSel * 0.12) }
+        { id: "ctrl", codigo: `PFW01-${numEstagiosReal}`, nome: `Controlador Automático de FP WEG PFW01 (${numEstagiosReal} Saídas)`, qtd: 1, preco: obterPrecoEstimado('controlador', numEstagiosReal, tensao) },
+        { id: "disj_geral", codigo: `DJG-${disjuntorGeralSel}A`, nome: `Disjuntor Geral Tripolar Caixa Moldada WEG ${disjuntorGeralSel}A`, qtd: 1, preco: obterPrecoEstimado('disjuntor_geral', disjuntorGeralSel, tensao) },
+        { id: "gab", codigo: "GAB-6040", nome: "Gabinete Metálico Montagem IP54 600x400x250mm com Acessórios", qtd: 1, preco: obterPrecoEstimado('gabinete', 0, tensao) },
+        { id: "tc", codigo: `TC-${tcEntradaSel}-5`, nome: `Transformador de Corrente Janela WEG ${tcEntradaSel}/5A`, qtd: 1, preco: obterPrecoEstimado('tc', tcEntradaSel, tensao) }
       ];
 
       for (const [kvarVal, qtd] of Object.entries(contagemCapacitores)) {
         const val = parseFloat(kvarVal);
         const contator = selecionarContatorWEG(val, tensao);
         
-        bom.push({ codigo: `UCW-${val}kvar`, nome: `Célula Capacitiva Trifásica WEG ${val} kVAr ${tensao}V`, qtd: qtd, preco: val * 22.50 });
-        bom.push({ codigo: contator.codigo, nome: contator.nome, qtd: qtd, preco: contator.preco });
-        bom.push({ codigo: `MDW-C${Math.round(val * 1.5)}`, nome: `Disjuntor Tripolar para Estágio de ${val}kVAr`, qtd: qtd, preco: 65.00 });
+        bom.push({ id: `cap_${val}`, codigo: `UCW-${val}kvar`, nome: `Célula Capacitiva Trifásica WEG ${val} kVAr ${tensao}V`, qtd: qtd, preco: obterPrecoEstimado('celula', val, tensao) });
+        bom.push({ id: `cont_${val}`, codigo: contator.codigo, nome: contator.nome, qtd: qtd, preco: contator.preco });
+        bom.push({ id: `disj_${val}`, codigo: `MDW-C${Math.round(val * 1.5)}`, nome: `Disjuntor Tripolar DIN para Estágio de ${val}kVAr`, qtd: qtd, preco: obterPrecoEstimado('disjuntor_estagio', val, tensao) });
       }
 
-      globalCalculo = { P, fp1, tensao, numEstagios: numEstagiosReal, kvarNecessario, kvarTotalReal, deltaKvar, disjuntorGeralSel, tcEntradaSel, estagios, bom };
-      renderizarTabela(bom);
+      // COMPUTAÇÃO DA COMPENSAÇÃO FIXA DE TRAFO NA BOM
+      const chkTrafo = document.getElementById('chkIncluirTrafo').checked;
+      let dadosTrafoBOM = null;
+
+      if (chkTrafo) {
+        const kvaTrafoSel = parseFloat(document.getElementById('selectKvaTrafo').value);
+        const kvarTrafoVal = trafoReativoMapWEG[kvaTrafoSel] || 0;
+        
+        document.getElementById('labelKvarTrafoRef').innerText = `Reativo estimado WEG: ${kvarTrafoVal} kVAR`;
+
+        if (kvarTrafoVal > 0) {
+          const iNomTrafo = (kvarTrafoVal * 1000) / (Math.sqrt(3) * tensao);
+          const iDisjTrafoTarget = iNomTrafo * 1.43;
+          const disjTrafoAmp = disjuntoresComerciais.find(d => d >= iDisjTrafoTarget) || 125;
+
+          dadosTrafoBOM = {
+            kva: kvaTrafoSel,
+            kvar: kvarTrafoVal,
+            disjuntorAmp: disjTrafoAmp
+          };
+
+          bom.push({ 
+            id: `cap_trafo_${kvarTrafoVal}`,
+            codigo: `UCW-FIXA-${kvarTrafoVal}k`, 
+            nome: `Célula Capacitiva Trifásica WEG ${kvarTrafoVal} kVAr ${tensao}V (Fixa Trafo ${kvaTrafoSel} kVA)`, 
+            qtd: 1, 
+            preco: obterPrecoEstimado('celula', kvarTrafoVal, tensao) 
+          });
+          bom.push({ 
+            id: `disj_trafo_${disjTrafoAmp}`,
+            codigo: `DJ-TRAFO-${disjTrafoAmp}A`, 
+            nome: `Disjuntor Tripolar DIN WEG ${disjTrafoAmp}A Curva C (Proteção Banco Fixo Trafo)`, 
+            qtd: 1, 
+            preco: obterPrecoEstimado('disjuntor_estagio', 0, tensao) 
+          });
+        }
+      } else {
+        document.getElementById('labelKvarTrafoRef').innerText = `Reativo estimado: -- kVAR`;
+      }
+
+      listaItensBOM = bom;
+
+      globalCalculo = { 
+        P, 
+        fp1, 
+        tensao, 
+        numEstagios: numEstagiosReal, 
+        kvarNecessario, 
+        kvarTotalReal, 
+        deltaKvar, 
+        disjuntorGeralSel, 
+        tcEntradaSel, 
+        estagios, 
+        dadosTrafoBOM
+      };
+
+      renderizarTabela();
     }
 
-    function renderizarTabela(itens) {
+    function renderizarTabela() {
       const tbody = document.getElementById('tabelaBOM');
       tbody.innerHTML = "";
       let valorTotal = 0;
       let totalItens = 0;
 
-      itens.forEach(item => {
+      listaItensBOM.forEach((item, index) => {
         const subtotal = item.qtd * item.preco;
         valorTotal += subtotal;
         totalItens += item.qtd;
 
         tbody.innerHTML += `
-          <tr class="hover:bg-gray-50">
-            <td class="p-2 border-b">
-              <div class="font-medium text-slate-800">${item.nome}</div>
-              <div class="text-xs text-gray-400">Cód: ${item.codigo}</div>
+          <tr class="hover:bg-gray-50 border-b">
+            <td class="p-2">
+              <input type="text" value="${item.nome}" onchange="atualizarItemCampo(${index}, 'nome', this.value)" class="w-full font-medium text-slate-800 text-sm p-1 border border-transparent hover:border-gray-300 focus:border-amber-500 rounded bg-transparent outline-none">
+              <input type="text" value="${item.codigo}" onchange="atualizarItemCampo(${index}, 'codigo', this.value)" class="w-full text-xs text-gray-400 p-0.5 border border-transparent hover:border-gray-300 focus:border-amber-500 rounded bg-transparent outline-none">
             </td>
-            <td class="p-2 border-b text-center font-bold">${item.qtd}</td>
-            <td class="p-2 border-b text-right">R$ ${item.preco.toFixed(2)}</td>
-            <td class="p-2 border-b text-right font-semibold">R$ ${subtotal.toFixed(2)}</td>
+            <td class="p-2 text-center">
+              <input type="number" min="1" value="${item.qtd}" onchange="atualizarItemCampo(${index}, 'qtd', this.value)" class="w-16 text-center font-bold text-sm p-1 border border-gray-200 rounded focus:border-amber-500 outline-none">
+            </td>
+            <td class="p-2 text-right col-preco">
+              <input type="number" step="0.01" value="${item.preco.toFixed(2)}" onchange="atualizarItemCampo(${index}, 'preco', this.value)" class="w-24 text-right text-sm p-1 border border-gray-200 rounded focus:border-amber-500 outline-none font-semibold">
+            </td>
+            <td class="p-2 text-right font-bold text-slate-900 col-preco">
+              R$ ${subtotal.toFixed(2)}
+            </td>
+            <td class="p-2 text-center btn-acao-tabela no-print">
+              <button onclick="removerItemBOM(${index})" title="Excluir Item" class="text-red-500 hover:text-red-700 font-bold p-1">
+                ✕
+              </button>
+            </td>
           </tr>
         `;
       });
@@ -539,21 +716,75 @@
       globalCalculo.valorTotal = valorTotal;
       document.getElementById('precoTotal').innerText = `R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
       document.getElementById('badgeItens').innerText = `${totalItens} peças dimensionadas`;
+
+      toggleExibirPrecos(exibirPrecosGlobal);
+    }
+
+    function atualizarItemCampo(index, campo, valor) {
+      if (campo === 'qtd') {
+        listaItensBOM[index].qtd = parseInt(valor) || 1;
+      } else if (campo === 'preco') {
+        listaItensBOM[index].preco = parseFloat(valor) || 0;
+      } else {
+        listaItensBOM[index][campo] = valor;
+      }
+      renderizarTabela();
+    }
+
+    function removerItemBOM(index) {
+      listaItensBOM.splice(index, 1);
+      renderizarTabela();
+    }
+
+    function adicionarNovoItemManual() {
+      listaItensBOM.push({
+        id: `custom_${Date.now()}`,
+        codigo: "MANUAL-01",
+        nome: "Novo Item / Serviço Adicional",
+        qtd: 1,
+        preco: 100.00
+      });
+      renderizarTabela();
+    }
+
+    function toggleExibirPrecos(exibir) {
+      exibirPrecosGlobal = exibir;
+      const colunasPreco = document.querySelectorAll('.col-preco');
+      const containerTotal = document.getElementById('containerPrecoTotal');
+
+      colunasPreco.forEach(el => {
+        if (exibir) {
+          el.classList.remove('hidden', 'hide-price-column');
+        } else {
+          el.classList.add('hidden', 'hide-price-column');
+        }
+      });
+
+      if (exibir) {
+        containerTotal.classList.remove('hidden');
+      } else {
+        containerTotal.classList.add('hidden');
+      }
     }
 
     function enviarWhatsApp(tipo) {
-      if (!globalCalculo.valorTotal) {
+      if (!globalCalculo.valorTotal && exibirPrecosGlobal) {
         alert("Execute o cálculo primeiro.");
         return;
       }
 
-      const valorStr = globalCalculo.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      const valorStr = globalCalculo.valorTotal ? globalCalculo.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "0,00";
       
       let textoMargem = "";
       if (globalCalculo.deltaKvar >= 0) {
         textoMargem = `+${globalCalculo.deltaKvar.toFixed(2)} kVAr (Reserva para Expansão)`;
       } else {
         textoMargem = `-${Math.abs(globalCalculo.deltaKvar).toFixed(2)} kVAr (Ajuste de Tolerância)`;
+      }
+
+      let textoTrafoInfo = "";
+      if (globalCalculo.dadosTrafoBOM) {
+        textoTrafoInfo = `• Compensação Fixa Trafo: *${globalCalculo.dadosTrafoBOM.kvar} kVAR* (Trafo ${globalCalculo.dadosTrafoBOM.kva} kVA | Disjuntor ${globalCalculo.dadosTrafoBOM.disjuntorAmp}A)\n`;
       }
 
       let mensagem = "";
@@ -565,7 +796,8 @@
           "📌 *DIAGNÓSTICO TÉCNICO:*\n" +
           `• Carga Ativa: ${globalCalculo.P} kW em ${globalCalculo.tensao}V\n` +
           `• Reativo Mínimo Calculado: *${globalCalculo.kvarNecessario.toFixed(2)} kVAr*\n` +
-          `• Capacidade Projetada: *${globalCalculo.kvarTotalReal.toFixed(2)} kVAr* (${globalCalculo.numEstagios} Estágios)\n` +
+          `• Capacidade Banco Automático: *${globalCalculo.kvarTotalReal.toFixed(2)} kVAr* (${globalCalculo.numEstagios} Estágios)\n` +
+          textoTrafoInfo +
           `• Corrente Total Banco: *${((globalCalculo.kvarTotalReal * 1000) / (Math.sqrt(3) * globalCalculo.tensao)).toFixed(2)} A*\n` +
           `• Disjuntor Geral Proteção: *${globalCalculo.disjuntorGeralSel}A*\n` +
           `• Medição TC Entrada: *${globalCalculo.tcEntradaSel}/5A*\n` +
@@ -574,20 +806,33 @@
           "✓ Eliminação imediata de multas por excedente reativo na fatura de energia.\n" +
           "✓ Redução do aquecimento nos condutores e alívio de carga no transformador.\n" +
           "✓ Componentes dimensionados segundo as normas *NBR 5410 / NBR IEC 60831*.\n" +
-          "✓ Proteção reforçada com contatores de pré-carga WEG CWBC para surtos de inserção.\n\n" +
-          "💰 *INVESTIMENTO ESTIMADO:*\n" +
-          `*R$ ${valorStr}* (Material completo para montagem)\n` +
+          "✓ Proteção reforçada com contatores de pré-carga WEG CWBC para surtos de inserção.\n\n";
+
+        if (exibirPrecosGlobal) {
+          mensagem += 
+            "💰 *INVESTIMENTO ESTIMADO:*\n" +
+            `*R$ ${valorStr}* (Material completo para montagem)\n`;
+        }
+
+        mensagem += 
           "--------------------------------------------------\n" +
-          "📄 *Encaminho o PDF detalhado da proposta a seguir.*";
+          "📄 *Encaminho a especificação detalhada em anexo.*";
       } else {
         mensagem = 
           "⚡ *ORÇAMENTO BANCO DE CAPACITORES*\n" +
           `• Potência: ${globalCalculo.P} kW (${globalCalculo.tensao}V)\n` +
-          `• Capacidade: ${globalCalculo.kvarTotalReal.toFixed(2)} kVAr (${globalCalculo.numEstagios} Estágios)\n` +
+          `• Capacidade Automática: ${globalCalculo.kvarTotalReal.toFixed(2)} kVAr (${globalCalculo.numEstagios} Estágios)\n` +
+          (globalCalculo.dadosTrafoBOM ? `• Banco Fixo Trafo: ${globalCalculo.dadosTrafoBOM.kvar} kVAR (${globalCalculo.dadosTrafoBOM.kva} kVA)\n` : '') +
           `• Corrente Banco: ${((globalCalculo.kvarTotalReal * 1000) / (Math.sqrt(3) * globalCalculo.tensao)).toFixed(2)} A\n` +
-          `• Disjuntor Geral: ${globalCalculo.disjuntorGeralSel}A | TC: ${globalCalculo.tcEntradaSel}/5A\n` +
-          `• Investimento Estimado: R$ ${valorStr}\n\n` +
-          "Fico à disposição para dúvidas técnicas ou ajustes na proposta!";
+          `• Disjuntor Geral: ${globalCalculo.disjuntorGeralSel}A | TC: ${globalCalculo.tcEntradaSel}/5A\n`;
+          
+        if (exibirPrecosGlobal) {
+          mensagem += `• Investimento Estimado: R$ ${valorStr}\n\n`;
+        } else {
+          mensagem += `\n`;
+        }
+
+        mensagem += "Fico à disposição para dúvidas técnicas ou ajustes na proposta!";
       }
 
       const link = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
